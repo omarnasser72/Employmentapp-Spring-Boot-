@@ -1,5 +1,6 @@
 package com.employmentBackend.demo.controller;
 
+import com.employmentBackend.demo.exception.ApplicantAlreadyExist;
 import com.employmentBackend.demo.exception.ApplicantNotFoundException;
 import com.employmentBackend.demo.model.Applicant;
 import com.employmentBackend.demo.repository.ApplicantRepository;
@@ -14,9 +15,16 @@ public class ApplicantController {
     @Autowired
     private ApplicantRepository applicantRepository;
 
+    private Applicant applicantExist(String email) {
+        Applicant exists = applicantRepository.findApplicantByEmail(email);
+        return exists;
+    }
     @PostMapping("/applicant")
     Applicant newApplicant (@RequestBody Applicant newApplicant){
-        return applicantRepository.save(newApplicant);
+        if (applicantExist(newApplicant.getEmail()) == null)
+            return applicantRepository.save(newApplicant);
+
+        throw new ApplicantAlreadyExist();
     }
 
     @GetMapping("/applicants")
