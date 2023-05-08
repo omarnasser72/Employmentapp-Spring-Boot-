@@ -1,5 +1,7 @@
 package com.employmentBackend.demo.controller;
 
+import com.employmentBackend.demo.exception.DataNotCompleteException;
+import com.employmentBackend.demo.exception.QualificationAlreadyExistException;
 import com.employmentBackend.demo.exception.QualificationNotFoundException;
 import com.employmentBackend.demo.model.Qualifications;
 import com.employmentBackend.demo.repository.QualificationRepository;
@@ -14,9 +16,24 @@ public class QualificationController {
     @Autowired
     private QualificationRepository qualificationRepository;
 
+    private boolean dataComplete(Qualifications qualifications)
+    {
+        return !(qualifications.getName() == null || qualifications.getDescription() == null );
+    }
+
+    private Qualifications qualificationExist(String name) {
+        Qualifications exists = qualificationRepository.findQualificationByName(name);
+        return exists;
+    }
+
     @PostMapping("/qualification")
     Qualifications newQualification (@RequestBody Qualifications newQualification){
-        return qualificationRepository.save(newQualification);
+        if(!dataComplete(newQualification))
+            throw new DataNotCompleteException();
+        if(qualificationExist(newQualification.getName())==null)
+            return qualificationRepository.save(newQualification);
+
+        throw new QualificationAlreadyExistException();
     }
 
     @GetMapping("/qualifications")
@@ -32,12 +49,16 @@ public class QualificationController {
 
     @PutMapping("/qualification/{id}")
     Qualifications updateQualification(@RequestBody Qualifications newQualification, @PathVariable Long id){
-        return qualificationRepository.findById(id)
-                .map(qualification -> {
-                    qualification.setName(newQualification.getName());
-                    qualification.setDescription(newQualification.getDescription());
-                    return qualificationRepository.save(qualification);
-                }).orElseThrow(()->new QualificationNotFoundException(id));
+        if(dataComplete(newQualification)) {
+            return qualificationRepository.findById(id)
+                    .map(qualification -> {
+                        qualification.setName(newQualification.getName());
+                        qualification.setDescription(newQualification.getDescription());
+                        return qualificationRepository.save(qualification);
+                    }).orElseThrow(() -> new QualificationNotFoundException(id));
+        }
+        else
+            throw new DataNotCompleteException();
     }
 
     @DeleteMapping("/qualification/{id}")

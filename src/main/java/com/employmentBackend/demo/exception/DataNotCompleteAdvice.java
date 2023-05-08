@@ -10,13 +10,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
-public class ApplicantAlreadyExistAdvice {
+public class DataNotCompleteAdvice {
 
     @ResponseBody
-    @ExceptionHandler(ApplicantAlreadyExistException.class)
-    @ResponseStatus(HttpStatus.FOUND)
-
-    public Map<String, String> exceptionHandler(ApplicantAlreadyExistException e){
+    @ExceptionHandler(DataNotCompleteException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> exceptionHandler(DataNotCompleteException e){
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put("errorMessage", e.getMessage());
         return errorMap;

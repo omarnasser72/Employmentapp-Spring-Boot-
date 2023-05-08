@@ -1,9 +1,11 @@
 package com.employmentBackend.demo.controller;
 
-import com.employmentBackend.demo.exception.ApplicantAlreadyExist;
+import com.employmentBackend.demo.exception.ApplicantAlreadyExistException;
+import com.employmentBackend.demo.exception.DataNotCompleteException;
 import com.employmentBackend.demo.exception.ApplicantNotFoundException;
 import com.employmentBackend.demo.model.Applicant;
 import com.employmentBackend.demo.repository.ApplicantRepository;
+import com.employmentBackend.demo.repository.QualificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,12 +21,23 @@ public class ApplicantController {
         Applicant exists = applicantRepository.findApplicantByEmail(email);
         return exists;
     }
+
+    private boolean dataComplete(Applicant applicant)
+    {
+        return !(applicant.getEmail() == null || applicant.getName() == null || applicant.getPassword() == null || applicant.getPhone() == null);
+    }
     @PostMapping("/applicant")
     Applicant newApplicant (@RequestBody Applicant newApplicant){
+        if(dataComplete(newApplicant)) {
+            newApplicant.setStatus(0);
+            newApplicant.setJobSearches("");
+        }
+        else
+            throw new DataNotCompleteException();
         if (applicantExist(newApplicant.getEmail()) == null)
             return applicantRepository.save(newApplicant);
 
-        throw new ApplicantAlreadyExist();
+        throw new ApplicantAlreadyExistException();
     }
 
     @GetMapping("/applicants")
@@ -40,8 +53,9 @@ public class ApplicantController {
 
     @PutMapping("/applicant/{id}")
     Applicant updateApplicant(@RequestBody Applicant newApplicant, @PathVariable Long id){
-        return applicantRepository.findById(id)
-                .map(applicant -> {
+        if(dataComplete(newApplicant)) {
+            return applicantRepository.findById(id)
+                    .map(applicant -> {
                         applicant.setName(newApplicant.getName());
                         applicant.setEmail(newApplicant.getEmail());
                         applicant.setPassword(newApplicant.getPassword());
@@ -49,7 +63,10 @@ public class ApplicantController {
                         applicant.setJobSearches(newApplicant.getJobSearches());
                         applicant.setStatus(newApplicant.getStatus());
                         return applicantRepository.save(applicant);
-                }).orElseThrow(()->new ApplicantNotFoundException(id));
+                    }).orElseThrow(() -> new ApplicantNotFoundException(id));
+        }
+        else
+            throw new DataNotCompleteException();
     }
 
     @DeleteMapping("/applicant/{id}")

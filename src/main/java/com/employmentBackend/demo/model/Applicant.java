@@ -15,6 +15,8 @@ public class Applicant {
     private String phone;
     private int status;
 
+    private String jobSearches = " ";
+
     public String getJobSearches() {
         return jobSearches;
     }
@@ -22,9 +24,6 @@ public class Applicant {
     public void setJobSearches(String jobSearches) {
         this.jobSearches = jobSearches;
     }
-
-    private String jobSearches;
-
     public Long getId() {
         return id;
     }

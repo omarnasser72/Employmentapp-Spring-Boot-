@@ -10,6 +10,7 @@ public class Qualifications {
     private String name;
     private String description;
 
+
     @Id
     @GeneratedValue
 
