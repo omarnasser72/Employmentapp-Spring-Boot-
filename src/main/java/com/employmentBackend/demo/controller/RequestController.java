@@ -1,6 +1,7 @@
 package com.employmentBackend.demo.controller;
 
 import com.employmentBackend.demo.exception.*;
+import com.employmentBackend.demo.interfaces.isRequestDataComplete;
 import com.employmentBackend.demo.model.Request;
 import com.employmentBackend.demo.repository.ApplicantRepository;
 import com.employmentBackend.demo.repository.JobRepostiory;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-public class RequestController {
+public class RequestController implements isRequestDataComplete {
 
     @Autowired
     private RequestRepository requestRepository;
@@ -20,7 +21,8 @@ public class RequestController {
     @Autowired
     private JobRepostiory jobRepostiory;
 
-    private boolean dataComplete(Request request)
+    @Override
+    public boolean dataComplete(Request request)
     {
         return !(request.getApplicant_id() == null || request.getJob_id() == null);
     }
